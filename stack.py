@@ -5,7 +5,7 @@
 @Author: 陈锐填
 @Date: 2020-03-29 10:47:46
 @LastEditors: 陈锐填
-@LastEditTime: 2020-03-30 18:58:29
+@LastEditTime: 2020-04-04 19:38:34
 @FilePath: \结对项目\stack.py
 '''
 
@@ -28,3 +28,9 @@ class Stack():
     def pop(self):
         # 出栈
         return self.items.pop()
+
+    def items(self):
+        return self.items
+
+    def total(self):
+        return len(self.items)
