@@ -5,7 +5,7 @@
 @Author: 陈锐填
 @Date: 2020-03-29 14:59:02
 @LastEditors: 陈锐填
-@LastEditTime: 2020-04-04 20:12:34
+@LastEditTime: 2020-04-04 21:00:01
 @FilePath: \结对项目\szys.py
 '''
 
@@ -33,11 +33,11 @@ class SZYS():
         # 初始化文件
         with open('Exercises.txt', 'w') as f_n:
             f_n.write('')
-        with open('Grade.txt', 'w') as f_o:
+        with open('Grande.txt', 'w') as f_o:
             f_o.write('')
 
     def store(self):
-        # 调用create()，写入文件Exercise.txt
+        # 调用create()，写入文件Exercise.txt,Grand.txt
         for i in range(1, self.total + 1):
             self.create_formula()
             with open('Exercises.txt', 'a') as f_n:
@@ -53,7 +53,7 @@ class SZYS():
                     else:
                         f_n.write("{} ".format(item))
                 f_n.write("\n")
-            with open('Grade.txt', 'a') as f_o:
+            with open('Grande.txt', 'a') as f_o:
                 f_o.write(str(i) + '. ' + str(self.answer[i-1]) + '\n')
 
     def create_formula(self):
@@ -69,7 +69,7 @@ class SZYS():
         answer = self.get_answer(formula)
 
         # 查重，当题目已有时重新调用create_formula()
-        if self.is_equal(answer, formula):
+        if self.is_equal(answer, formula) is True:
             self.create_formula()
         else:
             self.answer.append(answer)
@@ -109,10 +109,10 @@ class SZYS():
         # 处理栈中的 加和减 操作，使用标志flag判断下个操作是否是减
         answer = 0
         flag = False
-        for item in range(s.total()):
+        for item in s.items:
             if item == '-':
                 flag = True
-            else:
+            elif item != '+':
                 if flag == True:
                     answer -= item
                 else:
