@@ -5,15 +5,16 @@
 @Author: 陈锐填
 @Date: 2020-03-29 14:59:02
 @LastEditors: 陈锐填
-@LastEditTime: 2020-04-04 21:00:01
+@LastEditTime: 2020-04-05 15:25:47
 @FilePath: \结对项目\szys.py
 '''
 
-
+import time
 import random
 from random import randint
 from fractions import Fraction
 from stack import Stack
+from time import time
 
 
 class SZYS():
@@ -29,6 +30,10 @@ class SZYS():
         self.max = max - 1
         self.answer = []
         self.formula = []
+        self.formula2 = []        
+        self.total_time = 0
+        self.create_time = 0
+        self.answer_time = 0
 
         # 初始化文件
         with open('Exercises.txt', 'w') as f_n:
@@ -38,11 +43,19 @@ class SZYS():
 
     def store(self):
         # 调用create()，写入文件Exercise.txt,Grand.txt
+
         for i in range(1, self.total + 1):
             self.create_formula()
-            with open('Exercises.txt', 'a') as f_n:
+    
+        with open('Grande.txt', 'a') as f_o:
+            for i in range(1, self.total + 1):
+                f_o.write(str(i) + '. ' + str(self.answer[i-1]) + '\n')
+        i = 0
+        with open('Exercises.txt', 'a') as f_n:
+            for formula in self.formula:
+                i = i + 1
                 f_n.write(str(i) + '. ')
-                for item in self.formula[i-1]:
+                for item in formula:
                     if type(item) is Fraction:
                         if item > 1:
                             num = item.numerator//item.denominator
@@ -52,64 +65,69 @@ class SZYS():
                             f_n.write("{} ".format(item))
                     else:
                         f_n.write("{} ".format(item))
-                f_n.write("\n")
-            with open('Grande.txt', 'a') as f_o:
-                f_o.write(str(i) + '. ' + str(self.answer[i-1]) + '\n')
+                f_n.write("=\n")
 
     def create_formula(self):
         # 生成式子
         formula = []
+        formula2 = set()
         for i in range(1, self.select('operate_sum') + 1):
             if i % 2 == 1:
-                formula.append(self.create_number())
+                num = self.create_number()
+                formula.append(num)
+                formula2.add(num)
             else:
-                formula.append(self.select('operation'))
-
-        # 计算答案
-        answer = self.get_answer(formula)
-
+                operate = self.select('operation')
+                formula.append(operate)
+                formula2.add(operate)
+                
         # 查重，当题目已有时重新调用create_formula()
-        if self.is_equal(answer, formula) is True:
-            self.create_formula()
-        else:
-            self.answer.append(answer)
-            self.formula.append(formula)
-
-
+        if self.is_equal(formula2) is True:           
+            self.create_formula()                      
+        else:  
+            answer = self.get_answer(formula)                    
+            if answer < 0:
+                self.create_formula()
+            else:
+                self.answer.append(answer)
+                self.formula.append(formula)
+                self.formula2.append(formula2)
+              
     def get_answer(self, formula):
         """
         给出答案
         """
         # 创建一个栈，先处理所以的 * 和 /操作
-        s = Stack()
+        
+        s = []
         flag1 = 0
         for item in formula:
-            if s.is_empty() is True:
-                s.push(item)
+            if s is None:
+                s.append(item)
             elif item == '*':
                 flag1 = 1
             elif item == '/':
                 flag1 = 2
             else:
                 if flag1 == 0:
-                    s.push(item)
+                    s.append(item)
                 if flag1 == 1:
                     num = s.pop() * item
-                    s.push(num)
+                    s.append(num)
                     flag1 = 0
                 if flag1 == 2:
-                    num = s.pop() / item
-                    s.push(num)
+                    num = Fraction(s.pop(),item)
+                    s.append(num)
                     flag1 = 0
 
         # 当栈里只剩一位时，即为答案
-        if s.total() == 1:
+        if len(s) == 1:
             return s.pop()
 
         # 处理栈中的 加和减 操作，使用标志flag判断下个操作是否是减
         answer = 0
         flag = False
-        for item in s.items:
+        for item in s:
             if item == '-':
                 flag = True
             elif item != '+':
@@ -117,25 +135,14 @@ class SZYS():
                     answer -= item
                 else:
                     answer += item
-
         return answer
 
-    def is_equal(self, answer, formula):
-        # 查重 遍历储存的答案，若答案即题目的序号存储在列表equal
-        equal = []
-        for i in range(len(self.answer)):
-            if answer == self.answer[i]:
-                equal.append(i)
-
-        # 判断相同答案对应的题目是否相同
-        if len(equal) == 0:
-            return False
-        else:
-            for i in equal:
-                for item in formula:
-                    if item not in self.formula[i]:
-                        return False
-            return True
+    def is_equal(self, formula):
+        # 查重 
+        t1 = time()        
+        if formula in self.formula2:
+            return True                                   
+        return False
 
     def create_number(self):
         """
