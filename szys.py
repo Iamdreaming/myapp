@@ -5,15 +5,15 @@
 @Author: 陈锐填
 @Date: 2020-03-29 14:59:02
 @LastEditors: 陈锐填
-@LastEditTime: 2020-04-05 15:25:47
+@LastEditTime: 2020-04-09 21:41:50
 @FilePath: \结对项目\szys.py
 '''
 
-import time
 import random
-from random import randint
+import time
 from fractions import Fraction
-from stack import Stack
+from random import randint
+import numpy as np
 from time import time
 
 
@@ -28,31 +28,27 @@ class SZYS():
 
         self.total = total
         self.max = max - 1
-        self.answer = []
-        self.formula = []
-        self.formula2 = []        
-        self.total_time = 0
-        self.create_time = 0
-        self.answer_time = 0
-
+        self.answer = {}
+        self.formula = {}
+        self.formula2 = []
         # 初始化文件
-        with open('Exercises.txt', 'w') as f_n:
+        with open('docs\\Exercises.txt', 'w') as f_n:
             f_n.write('')
-        with open('Grande.txt', 'w') as f_o:
+        with open('docs\\Answers.txt', 'w') as f_o:
             f_o.write('')
 
     def store(self):
-        # 调用create()，写入文件Exercise.txt,Grand.txt
+        # 调用create()，写入文件Exercise.txt,Answers.txt
 
         for i in range(1, self.total + 1):
-            self.create_formula()
+            self.create_formula( i )
     
-        with open('Grande.txt', 'a') as f_o:
+        with open('docs\\Answers.txt', 'a') as f_o:
             for i in range(1, self.total + 1):
-                f_o.write(str(i) + '. ' + str(self.answer[i-1]) + '\n')
+                f_o.write(str(i) + '. ' + str(self.answer[i]) + '\n')
         i = 0
-        with open('Exercises.txt', 'a') as f_n:
-            for formula in self.formula:
+        with open('docs\\Exercises.txt', 'a') as f_n:
+            for formula in self.formula.values():
                 i = i + 1
                 f_n.write(str(i) + '. ')
                 for item in formula:
@@ -67,31 +63,23 @@ class SZYS():
                         f_n.write("{} ".format(item))
                 f_n.write("=\n")
 
-    def create_formula(self):
+    def create_formula(self, i):
         # 生成式子
-        formula = []
-        formula2 = set()
-        for i in range(1, self.select('operate_sum') + 1):
-            if i % 2 == 1:
-                num = self.create_number()
-                formula.append(num)
-                formula2.add(num)
-            else:
-                operate = self.select('operation')
-                formula.append(operate)
-                formula2.add(operate)
+        formula = [ self.create_number() if j % 2 == 1 else self.select('operation') for j in range(1, self.select('operate_sum') + 1)  ]
+        formula2 = set(formula)
                 
         # 查重，当题目已有时重新调用create_formula()
         if self.is_equal(formula2) is True:           
-            self.create_formula()                      
+            self.create_formula(i)                      
         else:  
             answer = self.get_answer(formula)                    
             if answer < 0:
-                self.create_formula()
+                self.create_formula(i)
             else:
-                self.answer.append(answer)
-                self.formula.append(formula)
+                self.answer[i] = answer
                 self.formula2.append(formula2)
+                self.formula[i] = formula
+
               
     def get_answer(self, formula):
         """
@@ -106,7 +94,7 @@ class SZYS():
                 s.append(item)
             elif item == '*':
                 flag1 = 1
-            elif item == '/':
+            elif item == '÷':
                 flag1 = 2
             else:
                 if flag1 == 0:
@@ -137,10 +125,10 @@ class SZYS():
                     answer += item
         return answer
 
-    def is_equal(self, formula):
+    def is_equal(self, formula2):
         # 查重 
         t1 = time()        
-        if formula in self.formula2:
+        if formula2 in self.formula2:
             return True                                   
         return False
 
@@ -169,4 +157,5 @@ class SZYS():
         if string == 'member':
             return random.choice([True, False])
         if string == 'operation':
-            return random.choice(['+', '-', '*', '/'])
+            return random.choice(['+', '-', '*', '÷'])
+
