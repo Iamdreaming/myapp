@@ -5,16 +5,14 @@
 @Author: 陈锐填
 @Date: 2020-03-29 14:59:02
 @LastEditors: 陈锐填
-@LastEditTime: 2020-04-09 21:41:50
+@LastEditTime: 2020-04-11 16:29:45
 @FilePath: \结对项目\szys.py
 '''
 
 import random
-import time
 from fractions import Fraction
 from random import randint
 import numpy as np
-from time import time
 
 
 class SZYS():
@@ -32,7 +30,7 @@ class SZYS():
         self.formula = {}
         self.formula2 = []
         # 初始化文件
-        with open('docs\\Exercises.txt', 'w') as f_n:
+        with open('docs\\Exercises.txt', 'w', encoding='utf-8') as f_n:
             f_n.write('')
         with open('docs\\Answers.txt', 'w') as f_o:
             f_o.write('')
@@ -41,20 +39,20 @@ class SZYS():
         # 调用create()，写入文件Exercise.txt,Answers.txt
 
         for i in range(1, self.total + 1):
-            self.create_formula( i )
-    
-        with open('docs\\Answers.txt', 'a') as f_o:
+            self.create_formula(i)
+
+        with open('docs\\Answers.txt', 'a', encoding='utf-8') as f_o:
             for i in range(1, self.total + 1):
                 f_o.write(str(i) + '. ' + str(self.answer[i]) + '\n')
         i = 0
-        with open('docs\\Exercises.txt', 'a') as f_n:
+        with open('docs\\Exercises.txt', 'a', encoding='utf-8') as f_n:
             for formula in self.formula.values():
                 i = i + 1
                 f_n.write(str(i) + '. ')
                 for item in formula:
                     if type(item) is Fraction:
                         if item > 1:
-                            num = item.numerator//item.denominator
+                            num = item.numerator // item.denominator
                             item -= num
                             f_n.write("{}'{} ".format(num, item))
                         else:
@@ -65,14 +63,15 @@ class SZYS():
 
     def create_formula(self, i):
         # 生成式子
-        formula = [ self.create_number() if j % 2 == 1 else self.select('operation') for j in range(1, self.select('operate_sum') + 1)  ]
+        formula = [self.create_number() if j % 2 == 1 else self.select('operation') for j in
+                   range(1, self.select('operate_sum') + 1)]
         formula2 = set(formula)
-                
+
         # 查重，当题目已有时重新调用create_formula()
-        if self.is_equal(formula2) is True:           
-            self.create_formula(i)                      
-        else:  
-            answer = self.get_answer(formula)                    
+        if self.is_equal(formula2) is True:
+            self.create_formula(i)
+        else:
+            answer = self.get_answer(formula)
             if answer < 0:
                 self.create_formula(i)
             else:
@@ -80,13 +79,12 @@ class SZYS():
                 self.formula2.append(formula2)
                 self.formula[i] = formula
 
-              
     def get_answer(self, formula):
         """
         给出答案
         """
         # 创建一个栈，先处理所以的 * 和 /操作
-        
+
         s = []
         flag1 = 0
         for item in formula:
@@ -104,7 +102,7 @@ class SZYS():
                     s.append(num)
                     flag1 = 0
                 if flag1 == 2:
-                    num = Fraction(s.pop(),item)
+                    num = Fraction(s.pop(), item)
                     s.append(num)
                     flag1 = 0
 
@@ -126,10 +124,9 @@ class SZYS():
         return answer
 
     def is_equal(self, formula2):
-        # 查重 
-        t1 = time()        
+        # 查重
         if formula2 in self.formula2:
-            return True                                   
+            return True
         return False
 
     def create_number(self):
@@ -158,4 +155,3 @@ class SZYS():
             return random.choice([True, False])
         if string == 'operation':
             return random.choice(['+', '-', '*', '÷'])
-
