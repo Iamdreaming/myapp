@@ -1,18 +1,17 @@
 '''
 @Coding: utf-8
-@Description: 
-@version: 
+@Description:
+@version:
 @Author: 陈锐填
 @Date: 2020-03-29 14:59:02
 @LastEditors: 陈锐填
-@LastEditTime: 2020-04-11 16:29:45
+@LastEditTime: 2020-04-14 16:20:31
 @FilePath: \结对项目\szys.py
 '''
 
 import random
 from fractions import Fraction
 from random import randint
-import numpy as np
 
 
 class SZYS():
@@ -40,31 +39,54 @@ class SZYS():
 
         for i in range(1, self.total + 1):
             self.create_formula(i)
-
         with open('docs\\Answers.txt', 'a', encoding='utf-8') as f_o:
-            for i in range(1, self.total + 1):
-                f_o.write(str(i) + '. ' + str(self.answer[i]) + '\n')
+            for i in range(1, self.total +1 ):
+                f_o.write(str(i) + '. ')
+                if self.answer[i] > 1 and self.answer[i].denominator > 1:
+                    num = self.answer[i].numerator // self.answer[i].denominator
+                    self.answer[i] -= num
+                    f_o.write("{}'{} ".format(num, self.answer[i]))
+                else :
+                    f_o.write("{} ".format(self.answer[i]))
+                f_o.write('\n')
         i = 0
         with open('docs\\Exercises.txt', 'a', encoding='utf-8') as f_n:
             for formula in self.formula.values():
                 i = i + 1
                 f_n.write(str(i) + '. ')
                 for item in formula:
-                    if type(item) is Fraction:
-                        if item > 1:
+                    if type(item) == Fraction:
+                        if item > 1 and item.denominator > 1:
                             num = item.numerator // item.denominator
                             item -= num
                             f_n.write("{}'{} ".format(num, item))
-                        else:
+                        else :
                             f_n.write("{} ".format(item))
-                    else:
+                    elif item == '/':
+                        f_n.write('÷ ')
+                    else :
                         f_n.write("{} ".format(item))
                 f_n.write("=\n")
 
     def create_formula(self, i):
         # 生成式子
-        formula = [self.create_number() if j % 2 == 1 else self.select('operation') for j in
-                   range(1, self.select('operate_sum') + 1)]
+        formula = []
+        local = 0
+        flag = False
+        operate_sum = self.select('operate_sum') + 1
+        for j in range(1, operate_sum):
+            if j % 2 == 1 : 
+                if self.select('kuohao') and flag is False:
+                    if operate_sum  - j >= 3:
+                        formula.append('(')
+                        local = j
+                        flag = True
+                formula.append(self.create_number() )
+                if flag is True and j!= local:
+                    formula.append(')')
+                    flag = False
+            else :
+                formula.append(self.select('operation'))
         formula2 = set(formula)
 
         # 查重，当题目已有时重新调用create_formula()
@@ -72,57 +94,35 @@ class SZYS():
             self.create_formula(i)
         else:
             answer = self.get_answer(formula)
-            if answer < 0:
+            if answer < 0 or answer is False:
                 self.create_formula(i)
             else:
                 self.answer[i] = answer
                 self.formula2.append(formula2)
                 self.formula[i] = formula
 
+
     def get_answer(self, formula):
         """
+        将式子转化为字符串，利用eval及python内置计算
+        由于直接计算结果为小数，姑在每个数字前乘与Fraction(1,1)
         给出答案
         """
-        # 创建一个栈，先处理所以的 * 和 /操作
-
-        s = []
-        flag1 = 0
-        for item in formula:
-            if s is None:
-                s.append(item)
-            elif item == '*':
-                flag1 = 1
-            elif item == '÷':
-                flag1 = 2
-            else:
-                if flag1 == 0:
-                    s.append(item)
-                if flag1 == 1:
-                    num = s.pop() * item
-                    s.append(num)
-                    flag1 = 0
-                if flag1 == 2:
-                    num = Fraction(s.pop(), item)
-                    s.append(num)
-                    flag1 = 0
-
-        # 当栈里只剩一位时，即为答案
-        if len(s) == 1:
-            return s.pop()
-
-        # 处理栈中的 加和减 操作，使用标志flag判断下个操作是否是减
-        answer = 0
-        flag = False
-        for item in s:
-            if item == '-':
-                flag = True
-            elif item != '+':
-                if flag == True:
-                    answer -= item
-                else:
+        try:
+            answer = ''
+            for item in formula:            
+                if type(item) is Fraction:
+                    answer += '(Fraction(1,1) *' + str(item) + ')'
+                # 将除号标准化
+                elif item == '÷':
+                    answer += '/'
+                else :
                     answer += item
-        return answer
+            return  eval(answer)
+        except ZeroDivisionError:
+            return False
 
+       
     def is_equal(self, formula2):
         # 查重
         if formula2 in self.formula2:
@@ -137,7 +137,9 @@ class SZYS():
         """
         member = self.select('member')
         if member is True:
-            return randint(1, self.max)
+            fz = randint(1, self.max - 1)
+            fm = 1
+            return Fraction(fz, fm)
         else:
             fz = randint(1, self.max - 1)
             fm = randint(2, self.max)
@@ -154,4 +156,6 @@ class SZYS():
         if string == 'member':
             return random.choice([True, False])
         if string == 'operation':
-            return random.choice(['+', '-', '*', '÷'])
+            return random.choice(['+', '-', '*', '/'])
+        if string == 'kuohao':
+            return random.choice([True,False])
